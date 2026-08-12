@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, JSX } from "react";
+import { useRouter } from "next/router";
 import { LinkField, Text, useSitecore } from "@sitecore-content-sdk/nextjs";
 import { CompatibleLink } from "components/content-sdk/CompatibleLink";
 import { getFieldValue } from "lib/component-props";
@@ -38,18 +39,31 @@ const NavigationListItem: React.FC<NavigationListItemProps> = ({
   handleClick,
   relativeLevel,
 }) => {
-  const [isActive, setIsActive] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const { page } = useSitecore();
+  const router = useRouter();
 
   if (!fields) {
     return null;
   }
 
+  // Determine active state from current URL, not from CMS Styles (which can be stale)
+  const href = fields.Href ?? "";
+  const isActivePage =
+    href !== "" &&
+    (router.asPath === href ||
+      router.asPath.split("?")[0] === href ||
+      (href !== "/" && router.asPath.toLowerCase().startsWith(href.toLowerCase())));
+
   const classNames = [
-    ...fields.Styles,
+    // Exclude any 'active' the CMS injects; we control it from the URL above
+    ...fields.Styles.filter((s) => s !== "active"),
     `rel-level${relativeLevel}`,
-    isActive ? "active" : "",
-  ].join(" ");
+    isActivePage ? "active" : "",
+    isOpen ? "open" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const hasChildren = fields.Children?.length > 0;
   const children = hasChildren
@@ -67,7 +81,7 @@ const NavigationListItem: React.FC<NavigationListItemProps> = ({
     <li className={classNames} key={fields.Id} tabIndex={0}>
       <div
         className={`navigation-title ${hasChildren ? "child" : ""}`}
-        onClick={() => setIsActive(!isActive)}
+        onClick={() => setIsOpen(!isOpen)}
       >
         <CompatibleLink
           field={getLinkField(fields)}
@@ -106,39 +120,39 @@ export const Default = ({ params, fields }: NavigationProps) => {
     setIsMenuOpen(forceState ?? !isMenuOpen);
   };
 
-  const navigationItems = Object.values(fields)
-    .filter(Boolean)
-    .map((item: Fields, index) => (
-      <NavigationListItem
-        key={`${index}-${item.Id}`}
-        fields={item}
-        handleClick={(event) => handleToggleMenu(event, false)}
-        relativeLevel={1}
-      />
-    ));
+  // Sitecore often passes a single root item (e.g. Home) whose children are the real nav pages.
+  // Promote those children so they render as horizontal top-level items.
+  const rootItems = (Object.values(fields) as Fields[]).filter(Boolean);
+  const navSource: Fields[] =
+    rootItems.length === 1 && (rootItems[0].Children?.length ?? 0) > 0
+      ? [{ ...rootItems[0], Children: [] }, ...rootItems[0].Children]
+      : rootItems;
+
+  const navigationItems = navSource.map((item: Fields, index) => (
+    <NavigationListItem
+      key={`${index}-${item.Id}`}
+      fields={item}
+      handleClick={(event) => handleToggleMenu(event, false)}
+      relativeLevel={1}
+    />
+  ));
 
   return (
     <div className={`component navigation ${styles}`} id={id}>
-      <div className="menu-mobile-navigate-wrapper">
-        <div className="menu-control">
-          <button
-            type="button"
-            className="menu-toggle"
-            onClick={() => handleToggleMenu()}
-            aria-expanded={isMenuOpen}
-            aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-          >
-            <div className="menu-humburger"><span className="mh-mid" /></div>
-            <span className="sr-only">Toggle navigation</span>
-          </button>
-        </div>
-      </div>
+      <button
+        type="button"
+        className="menu-toggle"
+        onClick={() => handleToggleMenu()}
+        aria-expanded={isMenuOpen}
+        aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+      >
+        <div className="menu-humburger"><span className="mh-mid" /></div>
+        <span className="sr-only">Toggle navigation</span>
+      </button>
 
-      <div className="component-content nav-wrapper">
-        <nav className={isMenuOpen ? "open" : ""}>
-          <ul className="clearfix">{navigationItems}</ul>
-        </nav>
-      </div>
+      <nav className={isMenuOpen ? "open" : ""}>
+        <ul className="clearfix">{navigationItems}</ul>
+      </nav>
     </div>
   );
 };
