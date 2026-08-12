@@ -40,11 +40,22 @@ const PromoContent = (props: PromoContentProps): JSX.Element => {
   const promoTextField = getFieldValue(fields.PromoText);
   const promoLinkField = getFieldValue(fields.PromoLink);
 
+  const promoIcon = promoIconField && {
+    ...promoIconField,
+    value: {
+      ...promoIconField.value,
+      style: { objectFit: "cover", width: "100%", height: "100%" },
+    },
+  };
+
   return (
     <Wrapper>
       <>
         <figure className="field-promoicon" itemProp="image">
-          <ContentSdkImage field={promoIconField} />
+          <ContentSdkImage
+            field={promoIcon}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
         </figure>
         <div className="promo-text" itemProp="description">
           {renderText(fields)}

@@ -38,12 +38,12 @@ const NavigationListItem: React.FC<NavigationListItemProps> = ({
   handleClick,
   relativeLevel,
 }) => {
+  const [isActive, setIsActive] = useState(false);
+  const { page } = useSitecore();
+
   if (!fields) {
     return null;
   }
-
-  const [isActive, setIsActive] = useState(false);
-  const { page } = useSitecore();
 
   const classNames = [
     ...fields.Styles,
@@ -119,23 +119,26 @@ export const Default = ({ params, fields }: NavigationProps) => {
 
   return (
     <div className={`component navigation ${styles}`} id={id}>
-      <label className="menu-mobile-navigate-wrapper">
-        <input
-          type="checkbox"
-          className="menu-mobile-navigate"
-          checked={isMenuOpen}
-          onChange={() => handleToggleMenu()}
-          aria-label={
-            isMenuOpen ? "Close navigation menu" : "Open navigation menu"
-          }
-        />
-        <div className="menu-humburger" />
-        <div className="component-content">
-          <nav>
-            <ul className="clearfix">{navigationItems}</ul>
-          </nav>
+      <div className="menu-mobile-navigate-wrapper">
+        <div className="menu-control">
+          <button
+            type="button"
+            className="menu-toggle"
+            onClick={() => handleToggleMenu()}
+            aria-expanded={isMenuOpen}
+            aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          >
+            <div className="menu-humburger"><span className="mh-mid" /></div>
+            <span className="sr-only">Toggle navigation</span>
+          </button>
         </div>
-      </label>
+      </div>
+
+      <div className="component-content nav-wrapper">
+        <nav className={isMenuOpen ? "open" : ""}>
+          <ul className="clearfix">{navigationItems}</ul>
+        </nav>
+      </div>
     </div>
   );
 };
