@@ -1,11 +1,11 @@
-const path = require('path');
+const path = require("path");
 
 /**
  * @type {import('next').NextConfig}
  */
 const nextConfig = {
   // Allow specifying a distinct distDir when concurrently running app in a container
-  distDir: process.env.NEXTJS_DIST_DIR || '.next',
+  distDir: process.env.NEXTJS_DIST_DIR || ".next",
 
   // Enable Turbopack file system caching for faster dev startup (beta)
   // See: https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack
@@ -16,10 +16,13 @@ const nextConfig = {
   i18n: {
     // These are all the locales you want to support in your application.
     // These should generally match (or at least be a subset of) those in Sitecore.
-    locales: ['en'],
+    locales: ["en"],
     // This is the locale that will be used when visiting a non-locale
     // prefixed path e.g. `/about`.
-    defaultLocale: process.env.DEFAULT_LANGUAGE || process.env.NEXT_PUBLIC_DEFAULT_LANGUAGE || 'en',
+    defaultLocale:
+      process.env.DEFAULT_LANGUAGE ||
+      process.env.NEXT_PUBLIC_DEFAULT_LANGUAGE ||
+      "en",
   },
 
   // Enable React Strict Mode
@@ -34,14 +37,20 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'edge*.**',
-        port: '',
+        protocol: "https",
+        hostname: "edge*.**",
+        port: "",
       },
       {
-        protocol: 'https',
-        hostname: 'xmc-*.**',
-        port: '',
+        protocol: "https",
+        hostname: "xmc-*.**",
+        port: "",
+      },
+      {
+        protocol: "https",
+        hostname: "media.sitecorecloud.io",
+        port: "",
+        pathname: "/**",
       },
     ],
   },
@@ -50,23 +59,23 @@ const nextConfig = {
     return [
       // healthz check
       {
-        source: '/healthz',
-        destination: '/api/healthz',
+        source: "/healthz",
+        destination: "/api/healthz",
       },
       // robots route
       {
-        source: '/robots.txt',
-        destination: '/api/robots',
+        source: "/robots.txt",
+        destination: "/api/robots",
       },
       // sitemap route
       {
-        source: '/sitemap:id([\\w-]{0,}).xml',
-        destination: '/api/sitemap',
+        source: "/sitemap:id([\\w-]{0,}).xml",
+        destination: "/api/sitemap",
       },
       // feaas api route
       {
-        source: '/feaas-render',
-        destination: '/api/editing/feaas/render',
+        source: "/feaas-render",
+        destination: "/api/editing/feaas/render",
       },
     ];
   },
@@ -76,7 +85,7 @@ const nextConfig = {
       // Add a loader to strip out getComponentServerProps from components in the client bundle
       config.module.rules.unshift({
         test: /src\\components\\.*\.tsx$/,
-        use: ['@sitecore-content-sdk\\nextjs\\component-props-loader'],
+        use: ["@sitecore-content-sdk\\nextjs\\component-props-loader"],
       });
     } else {
       // Force use of CommonJS on the server for FEAAS SDK since Content SDK also uses CommonJS entrypoint to FEAAS SDK.
@@ -84,9 +93,10 @@ const nextConfig = {
       // See https://nodejs.org/api/packages.html#dual-package-hazard.
       config.externals = [
         {
-          '@sitecore-feaas/clientside/react': 'commonjs @sitecore-feaas/clientside/react',
-          '@sitecore/byoc': 'commonjs @sitecore/byoc',
-          '@sitecore/byoc/react': 'commonjs @sitecore/byoc/react',
+          "@sitecore-feaas/clientside/react":
+            "commonjs @sitecore-feaas/clientside/react",
+          "@sitecore/byoc": "commonjs @sitecore/byoc",
+          "@sitecore/byoc/react": "commonjs @sitecore/byoc/react",
         },
         ...config.externals,
       ];

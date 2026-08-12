@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-brand: #0f172a;
+  --color-brand-contrast: #ffffff;
+  --color-primary: #2563eb;
+  --color-secondary: #f97316;
+  --color-accent: #f59e0b;
+  --color-bg: #f8fafc;
+  --color-text: #0f172a;
+  --color-muted: #64748b;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", sans-serif;
+    min-height: 100vh;
+  }
+}
